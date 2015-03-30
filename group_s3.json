@@ -1,0 +1,168 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Self-Service S3 Groups",
+
+  "Resources" : {
+
+    "S3MetadataGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+    "S3MetadataGroupPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "s3-metadata",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:List*",
+                "s3:GetObjectVersion",
+                "s3:GetObjectAcl",
+                "s3:GetObjectVersionAcl",
+                "s3:GetObjectTorrent",
+                "s3:GetObjectVersionTorrent",
+                "s3:GetBucketAcl",
+                "s3:GetBucketCORS",
+                "s3:GetBucketVersioning",
+                "s3:GetBucketRequestPayment",
+                "s3:GetBucketLocation",
+                "s3:GetBucketPolicy",
+                "s3:GetBucketNotification",
+                "s3:GetBucketLogging",
+                "s3:GetBucketTagging",
+                "s3:GetBucketWebsite",
+                "s3:GetLifecycleConfiguration"
+              ],
+              "Resource": [
+                "arn:aws:s3:::${aws:username}",
+                "arn:aws:s3:::${aws:username}/*",
+                "arn:aws:s3:::${aws:username}-*",
+                "arn:aws:s3:::${aws:username}-*/*",
+                "arn:aws:s3:::shared-*",
+                "arn:aws:s3:::shared-*/*"
+              ],
+              "Condition" : {
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "s3:ListAllMyBuckets",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "S3MetadataGroup" }]
+      }
+    },
+
+    "S3ReadGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+    "S3ReadGroupPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "s3-read",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:RestoreObject"
+              ],
+              "Resource": [
+                "arn:aws:s3:::${aws:username}",
+                "arn:aws:s3:::${aws:username}/*",
+                "arn:aws:s3:::${aws:username}-*",
+                "arn:aws:s3:::${aws:username}-*/*",
+                "arn:aws:s3:::shared-*",
+                "arn:aws:s3:::shared-*/*"
+              ],
+              "Condition" : {
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "S3ReadGroup" }]
+      }
+    },
+
+    "S3WriteGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+    "S3WriteGroupPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "s3-write",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:AbortMultipartUpload"
+              ],
+              "Resource": [
+                "arn:aws:s3:::${aws:username}",
+                "arn:aws:s3:::${aws:username}/*",
+                "arn:aws:s3:::${aws:username}",
+                "arn:aws:s3:::${aws:username}-*/*",
+                "arn:aws:s3:::shared-*",
+                "arn:aws:s3:::shared-*/*"
+              ],
+              "Condition" : {
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "S3WriteGroup" }]
+      }
+    },
+
+    "S3ManageGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+    "S3ManageGroupPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "s3-manage",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:*"
+              ],
+              "Resource": [
+                "arn:aws:s3:::${aws:username}",
+                "arn:aws:s3:::${aws:username}/*",
+                "arn:aws:s3:::${aws:username}-*",
+                "arn:aws:s3:::${aws:username}-*/*",
+                "arn:aws:s3:::shared-*",
+                "arn:aws:s3:::shared-*/*"
+              ],
+              "Condition" : {
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "s3:ListAllMyBuckets",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "S3ManageGroup" }]
+      }
+    }
+  }
+}

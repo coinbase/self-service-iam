@@ -1,0 +1,133 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Create an engineering group that can manage their own self-service isolated keys.",
+
+  "Resources" : {
+
+    "EngineeringGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+
+    "EngineeringPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "Engineering",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowEngineeringToChangeTheirOwnPasswords",
+              "Effect": "Allow",
+              "Action": [
+                "iam:ChangePassword",
+                "iam:CreateVirtualMFADevice",
+                "iam:DeactivateMFADevice",
+                "iam:DeleteVirtualMFADevice",
+                "iam:EnableMFADevice",
+                "iam:ResyncMFADevice",
+                "iam:CreateLoginProfile",
+                "iam:DeleteLoginProfile",
+                "iam:UpdateLoginProfile"
+              ],
+              "Resource": [
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/${aws:username}"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/${aws:username}-*"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/shared-*"]]
+                }
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"false"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "AllowEngineeringToSubUsers",
+              "Effect": "Allow",
+              "Action": [
+                "iam:CreateUser",
+                "iam:CreateAccessKey",
+                "iam:UpdateAccessKey",
+                "iam:DeleteAccessKey",
+                "iam:DeleteUser"
+              ],
+              "Resource": [
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/${aws:username}-*"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/shared-*"]]
+                }
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"false"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "AllowEngineeringToAddSubUsersToServiceGroups",
+              "Effect": "Allow",
+              "Action": [
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup"
+              ],
+              "Resource": [
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":group/service-*"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/${aws:username}"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/${aws:username}-*"]]
+                },
+                {"Fn::Join" :
+                  [ "",[ "arn:aws:iam::", { "Ref": "AWS::AccountId" } ,":user/shared-*"]]
+                }
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"false"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ViewReadOnlyAccountInfo",
+              "Effect": "Allow",
+              "Action": [
+                "iam:List*",
+                "iam:Get*"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"false"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ManageSupport",
+              "Effect": "Allow",
+              "Action": [
+                "support:*"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"false"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "EngineeringGroup" }]
+      }
+    }
+  }
+}

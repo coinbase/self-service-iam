@@ -1,0 +1,114 @@
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Create an admin group that can manage all IAM users",
+
+  "Resources" : {
+
+    "AdminGroup" : {
+      "Type" : "AWS::IAM::Group"
+    },
+
+    "AdminPolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyName" : "Admin",
+        "PolicyDocument" : {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "ManageAllIamUsers",
+              "Effect": "Allow",
+              "Action": [
+                "iam:ChangePassword",
+                "iam:CreateAccessKey",
+                "iam:CreateLoginProfile",
+                "iam:CreateUser",
+                "iam:CreateVirtualMFADevice",
+                "iam:DeactivateMFADevice",
+                "iam:DeleteLoginProfile",
+                "iam:DeleteUser",
+                "iam:DeleteVirtualMFADevice",
+                "iam:EnableMFADevice",
+                "iam:ResyncMFADevice",
+                "iam:UpdateLoginProfile",
+                "iam:UpdateAccessKey"
+              ],
+              "Resource": [
+                {"Fn::Join" : ["", ["arn:aws:iam::", {"Ref" : "AWS::AccountId"}, ":user/*"]] }
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"3600"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ManageMFADevices",
+              "Effect": "Allow",
+              "Action": [
+                "iam:CreateVirtualMFADevice",
+                "iam:DeactivateMFADevice",
+                "iam:DeleteVirtualMFADevice",
+                "iam:EnableMFADevice",
+                "iam:ResyncMFADevice"
+              ],
+              "Resource": [
+                {"Fn::Join" : ["", ["arn:aws:iam::", {"Ref" : "AWS::AccountId"}, ":mfa/*"]] }
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"3600"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ManageAllGroupMembership",
+              "Effect": "Allow",
+              "Action": [
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"3600"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ViewAllReadOnlyIamInfo",
+              "Effect": "Allow",
+              "Action": [
+                "iam:Get*",
+                "iam:List*"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"3600"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            },
+            {
+              "Sid": "ManageSupport",
+              "Effect": "Allow",
+              "Action": [
+                "support:*"
+              ],
+              "Resource": [
+                "*"
+              ],
+              "Condition" : {
+                "Null": {"aws:MultiFactorAuthAge":"3600"},
+                "Bool": {"aws:SecureTransport":"true"}
+              }
+            }
+          ]
+        },
+        "Groups" : [{ "Ref" : "AdminGroup" }]
+      }
+    }
+  }
+}
